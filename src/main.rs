@@ -18,13 +18,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = clap_app!(socket =>
         (@arg SERVER:-s --server)
         (@arg CLIENT: -c --client)
+        (@arg USERNAME: -u --username + takes_value )
     ).get_matches();
     
     if matches.is_present("SERVER") {
-        let server = Server::new(SOCKET_ADDRS).await?;
+        let mut server = Server::new(SOCKET_ADDRS).await?;
         server.start().await?;
     } else {
-        let mut client = Client::new("test").await?;
+        let username = if matches.is_present("USERNAME") {
+            matches.value_of("USERNAME").unwrap()
+        } else {
+            "test"
+        };
+        println!("your username is {}", username);
+        let mut client = Client::new(username).await?;
         client.start().await;
     }
     
